@@ -1,0 +1,173 @@
+* What
+
+emux is an attempt at a terminal multiplexer built on top of Emacs.
+
+* Why
+
+I bounced from screen to tmux and things never felt "Emacs-y" enough. I
+wanted the buffer switching, full on Emacs movement and text interaction,
+extremly high programability / flexibility, etc, etc that I was used
+to. Because of this I figured I would have a go at just making terminal multiplexer on top
+of Emacs.
+
+Emacs can already do everything it needs to be an awesome terminal
+multiplexer. emux is about making it convenient and delightful to manage.  It is in its early stages, it has a long way to
+go. I like it quite a bit already, and am using it excelusively for all of my terminal
+needs.
+
+emux currently runs on top of / uses multi-term, so has all the
+goodness that it provides.
+
+I have taken a great deal of inspiration from gnu screen, tmux, and elscreen.
+
+I am an ametur Elisp developer, learning this stuff as I go.  Feedback, issues, pull request,
+contribution and advice are more than welcome.
+
+* Features:
+** Sessions
+	Sessions keep track of associated screens and buffers, and manage default
+  directories for newly created terminals.  You can associate multiple
+  screens with a session, and switch between them.  Newly created
+  terminal buffers are associated with the current session, so you can
+  easily switch between session terminal buffers.
+
+** Screens
+	Screens store window configurations, which includes window
+  arrangement, buffers, and point locations.
+
+** Session switching
+	Changing sessions will restore the context and last screen
+  configuration for the session switched to.
+
+** Screen switching
+	You can switch to a different session screen, or switch to a global
+  screen, which will find the screen in a session, switch to the
+  session, and then restore the screen selected.
+
+** Buffer switching
+	You can switch to a buffer in your current session, which will find
+  the screen the buffer is in, switch to the screen configuration, and
+  focus the selected buffer.  You can also switch to a global buffer,
+  which will find the session the buffer is in, switch to the session,
+  find the screen the buffer is in, and switch to the screen
+  configuration that the buffer is in, and focus the buffer.
+
+** Mass process termination / buffer closing
+	Screens can be destroyed, which removes them from the session they
+  are in, kills all of the terminal processes and buffers. Sessions
+  can be destroyed, which destroys all of the screens assocaited with
+  them, as well as the terminal proccess and buffers.
+
+** Handy session buffer names
+	Terminal buffers associated with a session will be named with the
+  session name as a prefix, so you can easily switch between two
+  buffers of the same name in different sessions. If you had for
+  example two different rails project sessions with an rspec buffer,
+  you might have buffers named "foo/rspec" and "bar/rspec"
+
+** Smart terminal mode buffer movement switching
+	Moving around in the terminal changes from term char mode and line
+  mode.  Moving up and away from the prompt (scrolling up, searching
+  backwards, moving to the beginning of the buffer) will put you in line mode,
+  which allows for normal buffer movement and editing.  Moving back to
+  the prompt (keyboard quit, selecting term previous input, moving to the end of the buffer) will
+  place you back in char mode, to resume normal terminal interaction.
+
+* Installing
+
+M-x package-install emux
+
+(require 'emux)
+
+* After Installing
+
+Set the emux completing read command variable to your favorite
+completion command:
+
+  '(emux-completing-read-command (quote ido-completing-read))
+
+There are a bunch of things that are not immediately part of emux that
+are worth customizing / setting to make sure you get
+the most out of this.
+
+Tell multi-term which program to use:
+
+  '(multi-term-program "/bin/zsh")
+
+Tell term which keys you do not want to send to the underlying terminal:
+
+  '(term-unbind-key-list (quote ("C-z" "C-x" "C-c" "C-h" "C-l" "<ESC>")))
+
+Setup pretty terminal colors:
+
+  '(ansi-term-color-vector [unspecified "white" "red" "green" "yellow"
+	"royal blue" "magenta" "cyan" "white"] t)
+
+Set multi-term scolling behaviour:
+
+  '(multi-term-scroll-show-maximum-output t)
+
+Set maximum buffer size (scrollback):
+
+  '(term-buffer-maximum-size 16384)
+
+Set term default background and foreground:
+
+ '(term-default-bg-color "#000000")
+ '(term-default-fg-color "#AAAAAA")
+
+
+for some reason you need to have a fringe, or multi-term doesn't seem
+to scroll output correctly
+
+'(fringe-mode (quote (1 . 1)) nil (fringe))
+
+Bind some keys (below is what I use):
+
+  (global-set-key (kbd "C-x c") 'emux-terminal-create)
+  (global-set-key (kbd "C-x P") 'emux-session-load-template)
+
+	(setq
+	 term-bind-key-alist
+	 '(("C-x c" . emux-terminal-create)
+		 ("C-x r" . emux-terminal-rename)
+		 ("C-x K" . emux-terminal-destroy)
+		 ("C-x C" . emux-screen-create)
+		 ("C-x R" . emux-screen-rename)
+		 ("C-x s" . emux-screen-switch)
+		 ("C-x M-s" . emux-jump-to-screen)
+		 ("C-x S" . emux-session-switch)
+		 ("C-x P" . emux-session-load-template)
+		 ("C-x C-S-k" . emux-session-destroy)
+		 ("C-x B" . emux-jump-to-buffer)
+		 ("C-S-y" . emux-terminal-yank)
+		 ("C-x -" . emux-terminal-vsplit)
+		 ("C-x |" . emux-terminal-hsplit)
+		 ("C-c C-c" . term-interrupt-subjob)
+		 ("C-S-c" . term-interrupt-subjob)
+		 ("C-S-p" . previous-line)
+		 ("C-S-s" . isearch-forward)
+		 ("C-S-r" . isearch-backward)
+		 ("C-m" . term-send-raw)
+		 ("M-f" . term-send-forward-word)
+		 ("M-b" . term-send-backward-word)
+		 ("M-o" . term-send-backspace)
+		 ("M-d" . term-send-forward-kill-word)
+		 ("M-DEL" . term-send-backward-kill-word)
+		 ("M-," . term-send-input)
+		 ("M-." . comint-dynamic-complete)))
+
+	(define-key term-mode-map (kbd "C-S-l") 'emux-terminal-clear-screen)
+
+I like to make a new frame for emux, and switch between my normal
+Emacs stuff and my emux frame, it makes the context switching a little
+more apparent.  You can make a frame like this:
+
+(modify-frame-parameters (make-frame) (list (cons 'name "emux")))
+
+and then you can switch to it with:
+
+(select-frame-by-name "emux")
+
+* Interactive Functions
+TODO
