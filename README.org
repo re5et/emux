@@ -74,10 +74,11 @@ contribution and advice are more than welcome.
   place you back in char mode, to resume normal terminal interaction.
 
 * Installing
+This will be a package when I get around to it.  But until then:
 
-M-x package-install emux
+clone this into you emacs load path somewhere, then:
 
-(require 'emux)
+    (require 'emux)
 
 * After Installing
 
