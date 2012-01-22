@@ -45,7 +45,7 @@
 with the created screen. The optional TERMINAL-NAME will name the default
 screen terminal and TERMINAL-COMNMAND is the command to run in the newly
 created terminal"
-  (interactive "sscreen name: ")
+  (interactive)
   (let ((screen-symbol (gensym "emux-screen-")))
     (setplist screen-symbol properties)
     (emux-screen-save-current)
@@ -91,6 +91,7 @@ is not included, use current screen."
   "Switch to a different screen.  If the option SCREEN is passed
 in, switch to it, otherwise prompt for screen to switch to."
   (interactive)
+	(emux-screen-save-current)
   (let ((switch-to-screen
          (or
           screen
@@ -103,13 +104,12 @@ in, switch to it, otherwise prompt for screen to switch to."
                (lambda (screen)
                  (format
                   "%s[%s]"
-                  (emux-screen-get :name screen)
+                  (or (emux-screen-get :name screen) "")
                   (mapconcat
                    (lambda (buffer)
                      (cadr (split-string (buffer-name buffer) "/")))
                    (emux-screen-get :buffers screen) ":")))
                (emux-screens))) "\\["))))))
-    (emux-screen-save-current)
     (set-window-configuration (emux-screen-get :config  switch-to-screen))
     (emux-screen-current switch-to-screen)
     (message (format "switched to screen '%s'" (emux-screen-get :name)))))
