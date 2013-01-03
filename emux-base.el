@@ -44,7 +44,9 @@ will use."
   :group 'emux)
 
 (define-minor-mode emux-mode
-  "Minor mode to enhance working with terminals"
+  "emux Minor mode. Enhances working with terminals
+
+\\{emux-mode-map}"
   nil
   " emux"
   :group 'emux
