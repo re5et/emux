@@ -73,10 +73,10 @@ you wish to execute from anywhere in an emux terminal buffer"
     ("M-n" . term-send-down)
     ("M-d" . emux-terminal-forward-kill-word)
     ("M-DEL" . emux-terminal-backward-kill-word)
-    ("C-y" . emux-terminal-ring-yank)
-    ("M-y" . emux-terminal-ring-yank-pop)
-    ("C-S-y" . emux-emacs-ring-yank)
-    ("M-Y" . emux-emacs-ring-yank-pop))
+    ("C-y" . emux-terminal-terminal-ring-yank)
+    ("M-y" . emux-terminal-terminal-ring-yank-pop)
+    ("C-S-y" . emux-terminal-emacs-ring-yank)
+    ("M-Y" . emux-terminal-emacs-ring-yank-pop))
   "Keys to bind in term char-mode. These bindings are for
 commands you wish to execute from the command line in an
 emux terminal buffer"

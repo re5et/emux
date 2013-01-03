@@ -125,17 +125,17 @@ the NAME and COMMAND arguments"
   (emux-terminal-focus-prompt)
   (term-send-raw-string "\C-r"))
 
-(defun emux-terminal-ring-yank ()
+(defun emux-terminal-terminal-ring-yank ()
   (interactive)
   (emux-terminal-focus-prompt)
   (term-send-raw-string "\C-y"))
 
-(defun emux-terminal-ring-yank-pop ()
+(defun emux-terminal-terminal-ring-yank-pop ()
   (interactive)
   (emux-terminal-focus-prompt)
   (term-send-raw-string "\ey"))
 
-(defun emux-emacs-ring-yank ()
+(defun emux-terminal-emacs-ring-yank ()
   "Yank the last item from the kill ring and send
 to the current buffers terminal"
   (interactive)
@@ -143,7 +143,7 @@ to the current buffers terminal"
   (flet ((insert-for-yank (string) (term-send-raw-string string)))
     (yank)))
 
-(defun emux-emacs-ring-yank-pop ()
+(defun emux-terminal-emacs-ring-yank-pop ()
   (interactive)
   (emux-terminal-focus-prompt)
   (dotimes (i (- (point) (mark t)))
