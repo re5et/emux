@@ -38,7 +38,7 @@
   :group 'emux)
 
 (defcustom emux-terminal-command-line-unbind-key-list
-  '("C-x" "C-c" "C-h" "C-v" "C-r" "C-s" "<ESC>")
+  '("C-x" "C-c" "C-h" "C-r" "C-s" "<ESC>")
   "Keys to unbind from the command line in emux-mode."
   :type 'list
   :group 'emux)
@@ -57,6 +57,8 @@
     ("M-r" . emux-terminal-reverse-search-history)
     ("M-<" . emux-beginning-of-buffer)
     ("M->" . emux-end-of-buffer)
+    ("M-p" . emux-terminal-previous-command)
+    ("M-n" . emux-terminal-next-command)
     ("M-v" . emux-scroll-down-command)
     ("C-v" . emux-scroll-up-command)
     ("C-n" . emux-next-line)
@@ -69,8 +71,8 @@ you wish to execute from anywhere in an emux terminal buffer"
   :group 'emux)
 
 (defcustom emux-terminal-command-line-bind-key-alist
-  '(("M-p" . term-send-up)
-    ("M-n" . term-send-down)
+  '(("M-f" . emux-terminal-forward-word)
+    ("M-b" . emux-terminal-backward-word)
     ("M-d" . emux-terminal-forward-kill-word)
     ("M-DEL" . emux-terminal-backward-kill-word)
     ("C-y" . emux-terminal-terminal-ring-yank)
