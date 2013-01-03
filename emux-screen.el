@@ -37,6 +37,18 @@
 (require 'emux-base)
 (require 'emux-term)
 
+(defcustom emux-mode-emux-screen-bind-key-alist
+  '(("C-x C" . emux-screen-create)
+    ("C-x R" . emux-screen-rename)
+    ("C-x s" . emux-screen-switch))
+  "Keys to bind in emux-mode. These bindings are for
+emux-screen commands you wish to execute from anywhere in an
+emux terminal buffer."
+  :type 'alist
+  :group 'emux)
+
+(emux-mode-map-bind emux-mode-emux-screen-bind-key-alist)
+
 (defun emux-screens ()
   "Internal emux use, accessor that returns current screens"
   (emux-get 'screens))

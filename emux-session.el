@@ -41,6 +41,18 @@
 be created with the value as it's name."
   :type 'string)
 
+(defcustom emux-mode-emux-screen-bind-key-alist
+  '(("C-x M-s" . emux-jump-to-screen)
+    ("C-x C-S-k" . emux-session-destroy)
+    ("C-x B" . emux-jump-to-buffer))
+  "keys to bind in emux-mode. These bindings are for
+emux-session commands you wish to execute from anywhere in an
+emux terminal buffer"
+  :type 'alist
+  :group 'emux)
+
+(emux-mode-map-bind emux-mode-emux-screen-bind-key-alist)
+
 (defun emux-sessions ()
   (emux-get 'sessions))
 

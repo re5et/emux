@@ -35,6 +35,51 @@
 
 (require 'emux-base)
 
+(defcustom emux-term-command-line-unbind-key-list
+  '("C-x" "C-c" "C-h" "C-r" "C-s" "<ESC>")
+  "Keys that should not fall through to term in term-char mode."
+  :type 'list
+  :group 'emux)
+
+(defcustom emux-term-command-line-bind-key-alist
+  '(("M-f" . emux-term-forward-word)
+    ("M-b" . emux-term-backward-word)
+    ("M-d" . emux-term-forward-kill-word)
+    ("M-DEL" . emux-term-backward-kill-word)
+    ("C-y" . emux-term-terminal-ring-yank)
+    ("M-y" . emux-term-terminal-ring-yank-pop)
+    ("C-S-y" . emux-term-emacs-ring-yank)
+    ("M-Y" . emux-term-emacs-ring-yank-pop))
+  "Keys to bind in term char-mode. These bindings are for
+commands you wish to execute from the command line in an
+emux terminal buffer"
+  :type 'alist
+  :group 'emux)
+
+(defcustom emux-mode-emux-term-bind-key-alist
+  '(("M-r" . emux-term-reverse-search-history)
+    ("M-p" . emux-term-previous-command)
+    ("M-n" . emux-term-next-command)
+    ("C-g" . emux-term-keyboard-quit)
+    ("M-<" . emux-term-beginning-of-buffer)
+    ("M->" . emux-term-end-of-buffer)
+    ("M-v" . emux-term-scroll-down-command)
+    ("C-v" . emux-term-scroll-up-command)
+    ("C-p" . emux-term-previous-line)
+    ("C-n" . emux-term-next-line)
+    ("C-x r" . emux-term-rename)
+    ("C-x -" . emux-term-vsplit)
+    ("C-x |" . emux-term-hsplit)
+    ("C-x K" . emux-term-destroy)
+    ("C-c C-c" . emux-term-keyboard-quit))
+  "Keys to bind in emux-mode. These bindings are for
+emux-term commands you wish to execute from anywhere in an
+emux terminal buffer."
+  :type 'alist
+  :group 'emux)
+
+(emux-mode-map-bind emux-mode-emux-term-bind-key-alist)
+
 (defun emux-term-create (&optional name command)
   "Create a new terminal with the buffer named NAME
 and execute terminal command command"
@@ -204,38 +249,44 @@ and enter term-char-mode"
     (kill-process process)
     (kill-buffer buffer)))
 
-(defun emux-beginning-of-buffer ()
+(defun emux-term-beginning-of-buffer ()
   (interactive)
   (beginning-of-buffer)
   (emux-term-blur-prompt))
 
-(defun emux-end-of-buffer ()
+(defun emux-term-end-of-buffer ()
   (interactive)
   (emux-term-focus-prompt))
 
-(defun emux-scroll-down-command ()
+(defun emux-term-scroll-down-command ()
   (interactive)
   (scroll-down-command)
   (emux-term-blur-prompt))
 
-(defun emux-scroll-up-command ()
+(defun emux-term-scroll-up-command ()
   (interactive)
   (if (< (emux-lines-left) (window-height))
       (emux-term-focus-prompt)
     (scroll-up-command)))
 
-(defun emux-previous-line ()
+(defun emux-term-previous-line ()
   (interactive)
   (previous-line)
   (emux-term-blur-prompt))
 
-(defun emux-next-line ()
+(defun emux-term-next-line ()
   (interactive)
   (let ((lines-left (emux-lines-left)))
     (cond
      ((equal lines-left 0) nil)
      ((equal lines-left 1) (emux-term-focus-prompt))
      ((> lines-left 1) (next-line)))))
+
+(defun emux-term-keyboard-quit ()
+  "Make sure that before keyboard quitting go back to term-char-mode"
+  (interactive)
+  (term-interrupt-subjob)
+  (emux-term-focus-prompt))
 
 (defun emux-lines-left ()
   (- (count-lines (point-min) (point-max))
@@ -244,11 +295,5 @@ and enter term-char-mode"
 (defadvice isearch-backward (before emux-term-isearch-backward activate)
   "Go into term-line-mode when moving to beginning of buffer"
   (emux-term-blur-prompt))
-
-(defun emux-keyboard-quit ()
-  "Make sure that before keyboard quitting go back to term-char-mode"
-  (interactive)
-  (term-interrupt-subjob)
-  (emux-term-focus-prompt))
 
 (provide 'emux-term)
