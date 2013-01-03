@@ -35,6 +35,12 @@
 
 (require 'emux-screen)
 
+(defcustom emux-default-session
+  "default"
+  "Default session name.  If Non-nil, a session will
+be created with the value as it's name."
+  :type 'string)
+
 (defun emux-sessions ()
   (emux-get 'sessions))
 
@@ -192,4 +198,14 @@
                    template
                    ".el"))
           (message "%s template loaded" template)))))
+
+(if emux-default-session
+    (progn
+      (emux-session-create
+       `(:name ,emux-default-session))
+      (emux-session-set-default-directory "~/")
+      (emux-screen-create
+       `(:name ,emux-default-session
+               :no-terminal t))))
+
 (provide 'emux-session)
