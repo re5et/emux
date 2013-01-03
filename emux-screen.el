@@ -50,9 +50,12 @@ created terminal"
     (setplist screen-symbol properties)
     (emux-screen-save-current)
     (delete-other-windows)
-    (emux-terminal-create
-     terminal-name
-     terminal-command)
+    (unless (emux-screen-get :no-terminal screen-symbol)
+      (emux-terminal-create
+       terminal-name
+       terminal-command))
+    (unless (emux-screen-get :name screen-symbol)
+      (emux-screen-set :name "1" screen-symbol))
     (emux-set
      'screens
      (cons
@@ -91,7 +94,7 @@ is not included, use current screen."
   "Switch to a different screen.  If the option SCREEN is passed
 in, switch to it, otherwise prompt for screen to switch to."
   (interactive)
-	(emux-screen-save-current)
+  (emux-screen-save-current)
   (let ((switch-to-screen
          (or
           screen
