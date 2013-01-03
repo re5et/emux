@@ -49,6 +49,8 @@ and execute terminal command command"
         (emux-terminal-command command))
     new-term))
 
+(defalias 'emux-terminal 'emux-terminal-create)
+
 (defun emux-terminal-handle-close ()
   "Close current term buffer when `exit' from term buffer."
   (when (ignore-errors (get-buffer-process (current-buffer)))
