@@ -33,18 +33,45 @@
 
 ;;
 
-(require 'multi-term)
+(require 'emux-base)
 
 (defun emux-terminal-create (&optional name command)
   "Create a new terminal with the buffer named NAME
 and execute terminal command command"
   (interactive)
-  (let* ((new-term (multi-term))
+  (let* ((new-term (term "/bin/zsh"))
          (name (or name "terminal")))
+    (emux-mode)
+    (emux-terminal-setup-keys)
+    (emux-terminal-handle-close)
     (emux-terminal-rename name)
     (if command
         (emux-terminal-command command))
     new-term))
+
+(defun emux-terminal-handle-close ()
+  "Close current term buffer when `exit' from term buffer."
+  (when (ignore-errors (get-buffer-process (current-buffer)))
+    (set-process-sentinel (get-buffer-process (current-buffer))
+                          (lambda (proc change)
+                            (when (string-match "\\(finished\\|exited\\)" change)
+                              (kill-buffer (process-buffer proc)))))))
+
+(defun emux-terminal-setup-keys ()
+  (dolist (unbind-key emux-terminal-command-line-unbind-key-list)
+    (cond
+     ((stringp unbind-key) (setq unbind-key (read-kbd-macro unbind-key)))
+     ((vectorp unbind-key) nil)
+     (t (signal 'wrong-type-argument (list 'array unbind-key))))
+    (define-key term-raw-map unbind-key nil))
+  (dolist (element emux-terminal-command-line-bind-key-alist)
+    (setq bind-key (car element))
+    (setq bind-command (cdr element))
+    (cond
+     ((stringp bind-key) (setq bind-key (read-kbd-macro bind-key)))
+     ((vectorp bind-key) nil)
+     (t (signal 'wrong-type-argument (list 'array bind-key))))
+    (define-key term-raw-map bind-key bind-command)))
 
 (defun emux-terminal-rename (name)
   "Change current terminal name to NAME"
@@ -83,12 +110,47 @@ the NAME and COMMAND arguments"
   (interactive "scommand: ")
   (emux-terminal-send-raw (concat command "\C-m") buffer))
 
-(defun emux-terminal-yank ()
+(defun emux-terminal-forward-kill-word ()
+  "Kill word in term mode."
+  (interactive)
+  (term-send-raw-string "\ed"))
+
+(defun emux-terminal-backward-kill-word ()
+  "Backward kill word in term mode."
+  (interactive)
+  (term-send-raw-string "\C-w"))
+
+(defun emux-terminal-reverse-search-history ()
+  (interactive)
+  (emux-terminal-focus-prompt)
+  (term-send-raw-string "\C-r"))
+
+(defun emux-terminal-ring-yank ()
+  (interactive)
+  (emux-terminal-focus-prompt)
+  (term-send-raw-string "\C-y"))
+
+(defun emux-terminal-ring-yank-pop ()
+  (interactive)
+  (emux-terminal-focus-prompt)
+  (term-send-raw-string "\ey"))
+
+(defun emux-emacs-ring-yank ()
   "Yank the last item from the kill ring and send
 to the current buffers terminal"
   (interactive)
   (emux-terminal-focus-prompt)
-  (emux-terminal-send-raw (current-kill 0 t)))
+  (flet ((insert-for-yank (string) (term-send-raw-string string)))
+    (yank)))
+
+(defun emux-emacs-ring-yank-pop ()
+  (interactive)
+  (emux-terminal-focus-prompt)
+  (dotimes (i (- (point) (mark t)))
+    (term-send-backspace))
+  (process-send-string
+   (get-buffer-process (current-buffer))
+   (current-kill 1)))
 
 (defun emux-terminal-clear-screen ()
   "Remove all output from current buffer
@@ -96,15 +158,16 @@ and enter term-char-mode"
   (interactive)
   (mark-whole-buffer)
   (delete-region (point-min) (point-max))
-  (term-char-mode))
+  (if (equal major-mode 'term-mode)
+      (term-char-mode)))
 
 (defun emux-terminal-focus-prompt ()
   (interactive)
   "Enter term-char-mode and put the cursor at the prompt"
-  (if (equal major-mode 'term-mode)
-      (progn
-        (term-char-mode)
-        (term-pager-eob))))
+  (term-char-mode)
+  (term-pager-eob)
+  (recenter (- -1 (min (max 0 scroll-margin)
+                       (truncate (/ (window-body-height) 4.0))))))
 
 (defun emux-terminal-blur-prompt ()
   "Enter term-line-mode if in term-mode"
@@ -119,40 +182,51 @@ and enter term-char-mode"
     (kill-process process)
     (kill-buffer buffer)))
 
-(defadvice scroll-down (before emux-terminal-scroll-down activate)
-  "Jump into line mode on scroll-down"
+(defun emux-beginning-of-buffer ()
+  (interactive)
+  (beginning-of-buffer)
   (emux-terminal-blur-prompt))
 
-(defadvice previous-line (before emux-terminal-previous-line activate)
-  "Jump into line mode on previous-line"
+(defun emux-end-of-buffer ()
+  (interactive)
+  (emux-terminal-focus-prompt))
+
+(defun emux-scroll-down-command ()
+  (interactive)
+  (scroll-down-command)
   (emux-terminal-blur-prompt))
 
-(defadvice beginning-of-buffer (before emux-terminal-beginning-of-buffer activate)
-  "Go into term-line-mode when moving to beginning of buffer"
+(defun emux-scroll-up-command ()
+  (interactive)
+  (if (< (emux-lines-left) (window-height))
+      (emux-terminal-focus-prompt)
+    (scroll-up-command)))
+
+(defun emux-previous-line ()
+  (interactive)
+  (previous-line)
   (emux-terminal-blur-prompt))
+
+(defun emux-next-line ()
+  (interactive)
+  (let ((lines-left (emux-lines-left)))
+    (cond
+     ((equal lines-left 0) nil)
+     ((equal lines-left 1) (emux-terminal-focus-prompt))
+     ((> lines-left 1) (next-line)))))
+
+(defun emux-lines-left ()
+  (- (count-lines (point-min) (point-max))
+     (line-number-at-pos)))
 
 (defadvice isearch-backward (before emux-terminal-isearch-backward activate)
   "Go into term-line-mode when moving to beginning of buffer"
   (emux-terminal-blur-prompt))
 
-(defadvice term-previous-input (before emux-terminal-previous-input activate)
-  "Go to term-char-mode when attemting to use previous command"
-  (emux-terminal-focus-prompt))
-
-;; (defadvice end-of-buffer (after emux-terminal-end-of-buffer activate)
-;;   "refocus prompt on end of buffer"
-;;   (emux-terminal-focus-prompt))
-
-(defadvice term-interrupt-subjob (before emux-terminal-interrupt-subjob activate)
+(defun emux-keyboard-quit ()
   "Make sure that before keyboard quitting go back to term-char-mode"
+  (interactive)
+  (term-interrupt-subjob)
   (emux-terminal-focus-prompt))
-
-(defadvice keyboard-quit (before emux-terminal-keyboard-quit activate)
-  "Make sure that before keyboard quitting go back to term-char-mode"
-  (emux-terminal-focus-prompt))
-
-(defadvice he-substitute-string (around emux-hippie-expand activate)
-  (term-send-backward-kill-word)
-  (emux-terminal-send-raw (ad-get-arg 0)))
 
 (provide 'emux-terminal)
