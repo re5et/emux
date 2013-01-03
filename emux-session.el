@@ -93,7 +93,7 @@ be created with the value as it's name."
 
 (defun emux-session-set-default-directory (path)
   (interactive "Dsession default directory: ")
-  (emux-session-set :default-directory path))
+  (emux-session-set :default-directory (directory-file-name path)))
 
 (defun emux-session-destroy (&optional session)
   (interactive)
@@ -119,9 +119,16 @@ be created with the value as it's name."
   (let
       ((default-directory
          (or
-          (emux-session-get :default-directory)
+          (concat (emux-session-get :default-directory) "/")
           default-directory)))
     ad-do-it))
+
+(defadvice emux-terminal-create (after emux-save-screen-after-terminal-create activate)
+  (emux-session-set
+   :buffers
+   (cons
+    (current-buffer)
+    (emux-session-get :buffers))))
 
 (defadvice emux-terminal-rename (around emux-session-terminal-rename activate)
   (let ((name (format "%s/%s" (emux-session-get :name) name)))
@@ -149,27 +156,30 @@ be created with the value as it's name."
                  "jump to global buffer: "
                  (mapcar 'buffer-name (emux-global-buffers)))))
     (catch 'break
-      (mapc (lambda (session)
-              (mapc (lambda (screen)
-                      (if (member (get-buffer buffer) (emux-screen-get :buffers screen))
-                          (progn
-                            (emux-session-switch session)
-                            (emux-screen-switch screen)
-                            (pop-to-buffer buffer)
-                            (message
-                             (format
-                              "switched to session %s and screen %s"
-                              (emux-session-get :name session)
-                              (emux-screen-get :name screen)))
-                            (throw 'break nil))))
-                    (emux-session-get :screens session)))
-            (emux-sessions)))))
+      (mapc
+       (lambda (session)
+         (mapc
+          (lambda (screen)
+            (if (member (get-buffer buffer) (emux-screen-get :buffers screen))
+                (progn
+                  (emux-session-switch session)
+                  (emux-screen-switch screen)
+                  (pop-to-buffer buffer)
+                  (message
+                   (format
+                    "switched to session %s and screen %s"
+                    (emux-session-get :name session)
+                    (emux-screen-get :name screen)))
+                  (throw 'break nil))))
+          (emux-session-get :screens session)))
+       (emux-sessions)))))
 
 (defun emux-jump-to-session-buffer ()
   (interactive)
   (let ((buffer (emux-completing-read
                  "jump to session buffer: "
-                 (mapcar 'buffer-name (emux-session-buffers (emux-session-current))))))
+                 (mapcar
+                  (lambda (buffer) (buffer-name buffer)) (emux-session-buffers (emux-session-current))))))
     (catch 'break
       (mapc (lambda (screen)
               (if (member (get-buffer buffer) (emux-screen-get :buffers screen))
