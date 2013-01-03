@@ -33,6 +33,7 @@
 
 ;;
 
+(require 'cl)
 (require 'emux-base)
 (require 'emux-terminal)
 
