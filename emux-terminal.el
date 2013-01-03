@@ -110,6 +110,26 @@ the NAME and COMMAND arguments"
   (interactive "scommand: ")
   (emux-terminal-send-raw (concat command "\C-m") buffer))
 
+(defun emux-terminal-previous-command ()
+  (interactive)
+  (emux-terminal-focus-prompt)
+  (term-send-prior))
+
+(defun emux-terminal-next-command ()
+  (interactive)
+  (emux-terminal-focus-prompt)
+  (term-send-next))
+
+(defun emux-terminal-backward-word ()
+  "Move backward word in term mode."
+  (interactive)
+  (term-send-raw-string "\eb"))
+
+(defun emux-terminal-forward-word ()
+  "Move forward word in term mode."
+  (interactive)
+  (term-send-raw-string "\ef"))
+
 (defun emux-terminal-forward-kill-word ()
   "Kill word in term mode."
   (interactive)
@@ -162,8 +182,8 @@ and enter term-char-mode"
       (term-char-mode)))
 
 (defun emux-terminal-focus-prompt ()
-  (interactive)
   "Enter term-char-mode and put the cursor at the prompt"
+  (interactive)
   (term-char-mode)
   (term-pager-eob)
   (recenter (- -1 (min (max 0 scroll-margin)
