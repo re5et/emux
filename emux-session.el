@@ -41,17 +41,18 @@
 be created with the value as it's name."
   :type 'string)
 
-(defcustom emux-mode-emux-screen-bind-key-alist
-  '(("C-x M-s" . emux-jump-to-screen)
-    ("C-x C-S-k" . emux-session-destroy)
-    ("C-x B" . emux-jump-to-buffer))
+(defcustom emux-mode-emux-session-bind-key-alist
+  '(("C-c d" . emux-session-set-default-directory)
+    ("C-c b" . emux-session-jump-to-global-buffer)
+    ("C-c B" . emux-session-jump-to-session-buffer)
+    ("C-c C-S-k" . emux-session-destroy))
   "keys to bind in emux-mode. These bindings are for
 emux-session commands you wish to execute from anywhere in an
 emux terminal buffer"
   :type 'alist
   :group 'emux)
 
-(emux-mode-map-bind emux-mode-emux-screen-bind-key-alist)
+(emux-mode-map-bind emux-mode-emux-session-bind-key-alist)
 
 (defun emux-sessions ()
   (emux-get 'sessions))
@@ -155,18 +156,18 @@ emux terminal buffer"
                             (emux-screen-get :buffers screen))
                           (emux-session-get :screens session)))))
 
-(defun emux-global-buffers ()
+(defun emux-session-global-buffers ()
   (emux-flatten
    (mapcar
     (lambda (session)
       (emux-session-buffers session))
     (emux-get 'sessions))))
 
-(defun emux-jump-to-global-buffer ()
+(defun emux-session-jump-to-global-buffer ()
   (interactive)
   (let ((buffer (emux-completing-read
                  "jump to global buffer: "
-                 (mapcar 'buffer-name (emux-global-buffers)))))
+                 (mapcar 'buffer-name (emux-session-global-buffers)))))
     (catch 'break
       (mapc
        (lambda (session)
@@ -186,7 +187,7 @@ emux terminal buffer"
           (emux-session-get :screens session)))
        (emux-sessions)))))
 
-(defun emux-jump-to-session-buffer ()
+(defun emux-session-jump-to-session-buffer ()
   (interactive)
   (let ((buffer (emux-completing-read
                  "jump to session buffer: "

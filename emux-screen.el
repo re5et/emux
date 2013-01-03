@@ -38,9 +38,10 @@
 (require 'emux-term)
 
 (defcustom emux-mode-emux-screen-bind-key-alist
-  '(("C-x C" . emux-screen-create)
-    ("C-x R" . emux-screen-rename)
-    ("C-x s" . emux-screen-switch))
+  '(("C-c C" . emux-screen-create)
+    ("C-c R" . emux-screen-rename)
+    ("C-c s" . emux-screen-switch)
+    ("C-c C-k" . emux-screen-destroy))
   "Keys to bind in emux-mode. These bindings are for
 emux-screen commands you wish to execute from anywhere in an
 emux terminal buffer."

@@ -67,10 +67,10 @@ emux terminal buffer"
     ("C-v" . emux-term-scroll-up-command)
     ("C-p" . emux-term-previous-line)
     ("C-n" . emux-term-next-line)
-    ("C-x r" . emux-term-rename)
-    ("C-x -" . emux-term-vsplit)
-    ("C-x |" . emux-term-hsplit)
-    ("C-x K" . emux-term-destroy)
+    ("C-c r" . emux-term-rename)
+    ("C-c -" . emux-term-vsplit)
+    ("C-c |" . emux-term-hsplit)
+    ("C-c K" . emux-term-destroy)
     ("C-c C-c" . emux-term-keyboard-quit))
   "Keys to bind in emux-mode. These bindings are for
 emux-term commands you wish to execute from anywhere in an
