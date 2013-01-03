@@ -35,7 +35,7 @@
 
 (require 'cl)
 (require 'emux-base)
-(require 'emux-terminal)
+(require 'emux-term)
 
 (defun emux-screens ()
   "Internal emux use, accessor that returns current screens"
@@ -52,7 +52,7 @@ created terminal"
     (emux-screen-save-current)
     (delete-other-windows)
     (unless (emux-screen-get :no-terminal screen-symbol)
-      (emux-terminal-create
+      (emux-term-create
        terminal-name
        terminal-command))
     (unless (emux-screen-get :name screen-symbol)
@@ -131,7 +131,7 @@ in, switch to it, otherwise prompt for screen to switch to."
 If the optional SCREEN parameter is not passed, use current screen."
   (interactive)
   (let ((screen (or screen (emux-screen-current))))
-    (mapc 'emux-terminal-destroy (emux-screen-get :buffers screen))
+    (mapc 'emux-term-destroy (emux-screen-get :buffers screen))
     (emux-set 'screens (remove screen (emux-screens)))
     (if (eq screen (emux-screen-current))
         (emux-screen-switch (car (emux-screens))))))

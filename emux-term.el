@@ -1,4 +1,4 @@
-;;; emux-terminal.el --- Emacs Lisp Behaviour-Driven Development framework
+;;; emux-term.el --- Emacs Lisp Behaviour-Driven Development framework
 
 ;; Copyright (C) 2011 atom smith
 
@@ -35,23 +35,23 @@
 
 (require 'emux-base)
 
-(defun emux-terminal-create (&optional name command)
+(defun emux-term-create (&optional name command)
   "Create a new terminal with the buffer named NAME
 and execute terminal command command"
   (interactive)
   (let* ((new-term (term "/bin/zsh"))
          (name (or name "terminal")))
     (emux-mode)
-    (emux-terminal-setup-keys)
-    (emux-terminal-handle-close)
-    (emux-terminal-rename name)
+    (emux-term-setup-keys)
+    (emux-term-handle-close)
+    (emux-term-rename name)
     (if command
-        (emux-terminal-command command))
+        (emux-term-command command))
     new-term))
 
-(defalias 'emux-terminal 'emux-terminal-create)
+(defalias 'emux-term 'emux-term-create)
 
-(defun emux-terminal-handle-close ()
+(defun emux-term-handle-close ()
   "Close current term buffer when `exit' from term buffer."
   (when (ignore-errors (get-buffer-process (current-buffer)))
     (set-process-sentinel (get-buffer-process (current-buffer))
@@ -59,14 +59,14 @@ and execute terminal command command"
                             (when (string-match "\\(finished\\|exited\\)" change)
                               (kill-buffer (process-buffer proc)))))))
 
-(defun emux-terminal-setup-keys ()
-  (dolist (unbind-key emux-terminal-command-line-unbind-key-list)
+(defun emux-term-setup-keys ()
+  (dolist (unbind-key emux-term-command-line-unbind-key-list)
     (cond
      ((stringp unbind-key) (setq unbind-key (read-kbd-macro unbind-key)))
      ((vectorp unbind-key) nil)
      (t (signal 'wrong-type-argument (list 'array unbind-key))))
     (define-key term-raw-map unbind-key nil))
-  (dolist (element emux-terminal-command-line-bind-key-alist)
+  (dolist (element emux-term-command-line-bind-key-alist)
     (setq bind-key (car element))
     (setq bind-command (cdr element))
     (cond
@@ -75,31 +75,31 @@ and execute terminal command command"
      (t (signal 'wrong-type-argument (list 'array bind-key))))
     (define-key term-raw-map bind-key bind-command)))
 
-(defun emux-terminal-rename (name)
+(defun emux-term-rename (name)
   "Change current terminal name to NAME"
   (interactive "snew terminal name: ")
   (rename-buffer name t))
 
-(defun emux-terminal-split-and-create (split-command &optional name command)
+(defun emux-term-split-and-create (split-command &optional name command)
   "Split screen using SPLIT-COMMAND and creat a new multi-term,
-passing the NAME and COMMAND arguments to emux-terminal-create"
+passing the NAME and COMMAND arguments to emux-term-create"
   (funcall split-command)
   (other-window 1)
-  (emux-terminal-create name command))
+  (emux-term-create name command))
 
-(defun emux-terminal-vsplit (&optional name command)
-  "Split vertically and call emux-terminal-create with
+(defun emux-term-vsplit (&optional name command)
+  "Split vertically and call emux-term-create with
 the NAME and COMMAND arguments"
   (interactive)
-  (emux-terminal-split-and-create 'split-window-vertically name command))
+  (emux-term-split-and-create 'split-window-vertically name command))
 
-(defun emux-terminal-hsplit (&optional name command)
-  "Split horizontally and call emux-terminal-create with
+(defun emux-term-hsplit (&optional name command)
+  "Split horizontally and call emux-term-create with
 the NAME and COMMAND arguments"
   (interactive)
-  (emux-terminal-split-and-create 'split-window-horizontally name command))
+  (emux-term-split-and-create 'split-window-horizontally name command))
 
-(defun emux-terminal-send-raw (string &optional buffer)
+(defun emux-term-send-raw (string &optional buffer)
   "Send STRING to terminal in buffer BUFFER"
   (interactive "sSend string to terminal: ")
   (let ((buf (if buffer
@@ -107,74 +107,74 @@ the NAME and COMMAND arguments"
                (current-buffer))))
     (term-send-raw-string string)))
 
-(defun emux-terminal-command (command &optional buffer)
+(defun emux-term-command (command &optional buffer)
   "Execute command COMMAND in terminal in buffer BUFFER"
   (interactive "scommand: ")
-  (emux-terminal-send-raw (concat command "\C-m") buffer))
+  (emux-term-send-raw (concat command "\C-m") buffer))
 
-(defun emux-terminal-previous-command ()
+(defun emux-term-previous-command ()
   (interactive)
-  (emux-terminal-focus-prompt)
+  (emux-term-focus-prompt)
   (term-send-prior))
 
-(defun emux-terminal-next-command ()
+(defun emux-term-next-command ()
   (interactive)
-  (emux-terminal-focus-prompt)
+  (emux-term-focus-prompt)
   (term-send-next))
 
-(defun emux-terminal-backward-word ()
+(defun emux-term-backward-word ()
   "Move backward word in term mode."
   (interactive)
   (term-send-raw-string "\eb"))
 
-(defun emux-terminal-forward-word ()
+(defun emux-term-forward-word ()
   "Move forward word in term mode."
   (interactive)
   (term-send-raw-string "\ef"))
 
-(defun emux-terminal-forward-kill-word ()
+(defun emux-term-forward-kill-word ()
   "Kill word in term mode."
   (interactive)
   (term-send-raw-string "\ed"))
 
-(defun emux-terminal-backward-kill-word ()
+(defun emux-term-backward-kill-word ()
   "Backward kill word in term mode."
   (interactive)
   (term-send-raw-string "\C-w"))
 
-(defun emux-terminal-reverse-search-history ()
+(defun emux-term-reverse-search-history ()
   (interactive)
-  (emux-terminal-focus-prompt)
+  (emux-term-focus-prompt)
   (term-send-raw-string "\C-r"))
 
-(defun emux-terminal-terminal-ring-yank ()
+(defun emux-term-terminal-ring-yank ()
   (interactive)
-  (emux-terminal-focus-prompt)
+  (emux-term-focus-prompt)
   (term-send-raw-string "\C-y"))
 
-(defun emux-terminal-terminal-ring-yank-pop ()
+(defun emux-term-terminal-ring-yank-pop ()
   (interactive)
-  (emux-terminal-focus-prompt)
+  (emux-term-focus-prompt)
   (term-send-raw-string "\ey"))
 
-(defun emux-terminal-emacs-ring-yank ()
+(defun emux-term-emacs-ring-yank ()
   "Yank the last item from the kill ring and send
 to the current buffers terminal"
   (interactive)
-  (emux-terminal-focus-prompt)
+  (emux-term-focus-prompt)
   (flet ((insert-for-yank (string) (term-send-raw-string string)))
     (yank)))
 
-(defun emux-terminal-emacs-ring-yank-pop ()
+(defun emux-term-emacs-ring-yank-pop ()
   (interactive)
-  (emux-terminal-focus-prompt)
+  (emux-term-focus-prompt)
   (dotimes (i (- (point) (mark t)))
     (term-send-backspace))
   (process-send-string
    (get-buffer-process (current-buffer))
    (current-kill 1)))
 
-(defun emux-terminal-clear-screen ()
+(defun emux-term-clear-screen ()
   "Remove all output from current buffer
 and enter term-char-mode"
   (interactive)
@@ -183,7 +183,7 @@ and enter term-char-mode"
   (if (equal major-mode 'term-mode)
       (term-char-mode)))
 
-(defun emux-terminal-focus-prompt ()
+(defun emux-term-focus-prompt ()
   "Enter term-char-mode and put the cursor at the prompt"
   (interactive)
   (term-char-mode)
@@ -191,12 +191,12 @@ and enter term-char-mode"
   (recenter (- -1 (min (max 0 scroll-margin)
                        (truncate (/ (window-body-height) 4.0))))))
 
-(defun emux-terminal-blur-prompt ()
+(defun emux-term-blur-prompt ()
   "Enter term-line-mode if in term-mode"
   (if (equal major-mode 'term-mode)
       (term-line-mode)))
 
-(defun emux-terminal-destroy (&optional buffer)
+(defun emux-term-destroy (&optional buffer)
   (interactive)
   (let* ((buffer (or buffer (current-buffer)))
          (process (get-buffer-process buffer)))
@@ -207,48 +207,48 @@ and enter term-char-mode"
 (defun emux-beginning-of-buffer ()
   (interactive)
   (beginning-of-buffer)
-  (emux-terminal-blur-prompt))
+  (emux-term-blur-prompt))
 
 (defun emux-end-of-buffer ()
   (interactive)
-  (emux-terminal-focus-prompt))
+  (emux-term-focus-prompt))
 
 (defun emux-scroll-down-command ()
   (interactive)
   (scroll-down-command)
-  (emux-terminal-blur-prompt))
+  (emux-term-blur-prompt))
 
 (defun emux-scroll-up-command ()
   (interactive)
   (if (< (emux-lines-left) (window-height))
-      (emux-terminal-focus-prompt)
+      (emux-term-focus-prompt)
     (scroll-up-command)))
 
 (defun emux-previous-line ()
   (interactive)
   (previous-line)
-  (emux-terminal-blur-prompt))
+  (emux-term-blur-prompt))
 
 (defun emux-next-line ()
   (interactive)
   (let ((lines-left (emux-lines-left)))
     (cond
      ((equal lines-left 0) nil)
-     ((equal lines-left 1) (emux-terminal-focus-prompt))
+     ((equal lines-left 1) (emux-term-focus-prompt))
      ((> lines-left 1) (next-line)))))
 
 (defun emux-lines-left ()
   (- (count-lines (point-min) (point-max))
      (line-number-at-pos)))
 
-(defadvice isearch-backward (before emux-terminal-isearch-backward activate)
+(defadvice isearch-backward (before emux-term-isearch-backward activate)
   "Go into term-line-mode when moving to beginning of buffer"
-  (emux-terminal-blur-prompt))
+  (emux-term-blur-prompt))
 
 (defun emux-keyboard-quit ()
   "Make sure that before keyboard quitting go back to term-char-mode"
   (interactive)
   (term-interrupt-subjob)
-  (emux-terminal-focus-prompt))
+  (emux-term-focus-prompt))
 
-(provide 'emux-terminal)
+(provide 'emux-term)

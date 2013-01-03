@@ -115,7 +115,7 @@ be created with the value as it's name."
   (flet ((emux-screens () (emux-session-get :screens)))
     ad-do-it))
 
-(defadvice emux-terminal-create (around emux-session-default-directory activate)
+(defadvice emux-term-create (around emux-session-default-directory activate)
   (let
       ((default-directory
          (or
@@ -123,14 +123,14 @@ be created with the value as it's name."
           default-directory)))
     ad-do-it))
 
-(defadvice emux-terminal-create (after emux-save-screen-after-terminal-create activate)
+(defadvice emux-term-create (after emux-save-screen-after-terminal-create activate)
   (emux-session-set
    :buffers
    (cons
     (current-buffer)
     (emux-session-get :buffers))))
 
-(defadvice emux-terminal-rename (around emux-session-terminal-rename activate)
+(defadvice emux-term-rename (around emux-session-terminal-rename activate)
   (let ((name (format "%s/%s" (emux-session-get :name) name)))
     ad-do-it))
 

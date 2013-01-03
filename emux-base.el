@@ -37,28 +37,28 @@
   "emux terminal multiplexer"
   :group 'emux)
 
-(defcustom emux-terminal-command-line-unbind-key-list
+(defcustom emux-term-command-line-unbind-key-list
   '("C-x" "C-c" "C-h" "C-r" "C-s" "<ESC>")
   "Keys to unbind from the command line in emux-mode."
   :type 'list
   :group 'emux)
 
 (defcustom emux-mode-bind-key-alist
-  '(("C-x r" . emux-terminal-rename)
-    ("C-x K" . emux-terminal-destroy)
+  '(("C-x r" . emux-term-rename)
+    ("C-x K" . emux-term-destroy)
     ("C-x C" . emux-screen-create)
     ("C-x R" . emux-screen-rename)
     ("C-x s" . emux-screen-switch)
     ("C-x M-s" . emux-jump-to-screen)
     ("C-x C-S-k" . emux-session-destroy)
     ("C-x B" . emux-jump-to-buffer)
-    ("C-x -" . emux-terminal-vsplit)
-    ("C-x |" . emux-terminal-hsplit)
-    ("M-r" . emux-terminal-reverse-search-history)
+    ("C-x -" . emux-term-vsplit)
+    ("C-x |" . emux-term-hsplit)
+    ("M-r" . emux-term-reverse-search-history)
     ("M-<" . emux-beginning-of-buffer)
     ("M->" . emux-end-of-buffer)
-    ("M-p" . emux-terminal-previous-command)
-    ("M-n" . emux-terminal-next-command)
+    ("M-p" . emux-term-previous-command)
+    ("M-n" . emux-term-next-command)
     ("M-v" . emux-scroll-down-command)
     ("C-v" . emux-scroll-up-command)
     ("C-n" . emux-next-line)
@@ -70,15 +70,15 @@ you wish to execute from anywhere in an emux terminal buffer"
   :type 'alist
   :group 'emux)
 
-(defcustom emux-terminal-command-line-bind-key-alist
-  '(("M-f" . emux-terminal-forward-word)
-    ("M-b" . emux-terminal-backward-word)
-    ("M-d" . emux-terminal-forward-kill-word)
-    ("M-DEL" . emux-terminal-backward-kill-word)
-    ("C-y" . emux-terminal-terminal-ring-yank)
-    ("M-y" . emux-terminal-terminal-ring-yank-pop)
-    ("C-S-y" . emux-terminal-emacs-ring-yank)
-    ("M-Y" . emux-terminal-emacs-ring-yank-pop))
+(defcustom emux-term-command-line-bind-key-alist
+  '(("M-f" . emux-term-forward-word)
+    ("M-b" . emux-term-backward-word)
+    ("M-d" . emux-term-forward-kill-word)
+    ("M-DEL" . emux-term-backward-kill-word)
+    ("C-y" . emux-term-terminal-ring-yank)
+    ("M-y" . emux-term-terminal-ring-yank-pop)
+    ("C-S-y" . emux-term-emacs-ring-yank)
+    ("M-Y" . emux-term-emacs-ring-yank-pop))
   "Keys to bind in term char-mode. These bindings are for
 commands you wish to execute from the command line in an
 emux terminal buffer"
