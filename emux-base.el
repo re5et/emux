@@ -83,7 +83,8 @@ emux terminal buffer"
   :type 'alist
   :group 'emux)
 
-(defcustom emux-completing-read-command 'completing-read
+(defcustom emux-completing-read-command
+  'completing-read
   "The completing read command emux-completing-read
 will use."
   :group 'emux)
