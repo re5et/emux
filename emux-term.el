@@ -160,12 +160,12 @@ the NAME and COMMAND arguments"
 (defun emux-term-previous-command ()
   (interactive)
   (emux-term-focus-prompt)
-  (term-send-prior))
+  (term-send-up))
 
 (defun emux-term-next-command ()
   (interactive)
   (emux-term-focus-prompt)
-  (term-send-next))
+  (term-send-down))
 
 (defun emux-term-backward-word ()
   "Move backward word in term mode."
