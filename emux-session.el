@@ -119,6 +119,18 @@ emux terminal buffer"
         (if (eq session (emux-session-current))
             (emux-session-current (car (emux-get 'sessions)))))))
 
+(defun emux-session-buffer-name (&optional buffer session)
+  "return emux session buffer name for BUFFER"
+  (let ((session-name (emux-session-get :name session))
+        (buffer-name (buffer-name buffer)))
+    (if (eq 0 (string-match (concat session-name "/") buffer-name))
+        buffer-name
+      (format "%s/%s" session-name buffer-name))))
+
+(defun emux-session-name-buffer (&optional form)
+  "Apply emux session buffer name to BUFFER."
+  (rename-buffer (emux-session-buffer-name (current-buffer)) t))
+
 (defadvice emux-screen-create (after emux-session-screen-create activate)
   (emux-session-set
    :screens
@@ -136,16 +148,15 @@ emux terminal buffer"
           default-directory)))
     ad-do-it))
 
-(defadvice emux-term-create (after emux-save-screen-after-terminal-create activate)
+(defadvice emux-term-create (after emux-store-session-buffer activate)
   (emux-session-set
    :buffers
    (cons
     (current-buffer)
     (emux-session-get :buffers))))
 
-(defadvice emux-term-rename (around emux-session-terminal-rename activate)
-  (let ((name (format "%s/%s" (emux-session-get :name) name)))
-    ad-do-it))
+(defadvice emux-term-rename (after emux-session-terminal-rename activate)
+  (emux-session-name-buffer))
 
 (defadvice emux-screen-current (around emux-session-current-screen activate)
   (emux-session-set :current-screen ad-do-it))
@@ -189,10 +200,12 @@ emux terminal buffer"
 
 (defun emux-session-jump-to-session-buffer ()
   (interactive)
-  (let ((buffer (emux-completing-read
-                 "jump to session buffer: "
-                 (mapcar
-                  (lambda (buffer) (buffer-name buffer)) (emux-session-buffers (emux-session-current))))))
+  (let ((buffer
+         (emux-completing-read
+          "jump to session buffer: "
+          (mapcar
+           (lambda (buffer) (buffer-name buffer))
+           (emux-session-buffers (emux-session-current))))))
     (catch 'break
       (mapc (lambda (screen)
               (if (member (get-buffer buffer) (emux-screen-get :buffers screen))
@@ -223,12 +236,12 @@ emux terminal buffer"
           (message "%s template loaded" template)))))
 
 (if emux-default-session
-    (progn
-      (emux-session-create
-       `(:name ,emux-default-session))
-      (emux-session-set-default-directory "~/")
-      (emux-screen-create
-       `(:name ,emux-default-session
-               :no-terminal t))))
+    (and
+     (emux-session-create
+      `(:name ,emux-default-session))
+     (emux-session-set-default-directory "~/")
+     (emux-screen-create
+      `(:name ,emux-default-session
+              :no-terminal t))))
 
 (provide 'emux-session)
