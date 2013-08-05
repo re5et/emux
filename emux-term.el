@@ -150,7 +150,8 @@ the NAME and COMMAND arguments"
   (let ((buf (if buffer
                  buffer
                (current-buffer))))
-    (term-send-raw-string string)))
+    (term-send-raw-string string)
+    (emux-term-focus-prompt)))
 
 (defun emux-term-command (command &optional buffer)
   "Execute command COMMAND in terminal in buffer BUFFER"
