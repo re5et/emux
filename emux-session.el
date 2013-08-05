@@ -141,11 +141,12 @@ emux terminal buffer"
     ad-do-it))
 
 (defadvice emux-term-create (around emux-session-default-directory activate)
-  (let
-      ((default-directory
-         (or
-          (concat (emux-session-get :default-directory) "/")
-          default-directory)))
+  (let*
+      ((emux-default-directory (emux-session-get :default-directory))
+       (default-directory
+         (if emux-default-directory
+             (concat emux-default-directory "/")
+           default-directory)))
     ad-do-it))
 
 (defadvice emux-term-create (after emux-store-session-buffer activate)
