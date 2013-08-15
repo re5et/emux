@@ -141,13 +141,24 @@ emux terminal buffer"
     ad-do-it))
 
 (defadvice emux-term-create (around emux-session-default-directory activate)
-  (let*
-      ((emux-default-directory (emux-session-get :default-directory))
-       (default-directory
-         (if emux-default-directory
-             (concat emux-default-directory "/")
-           default-directory)))
-    ad-do-it))
+  (let ((emux-default-directory (emux-session-get :default-directory)))
+    (if (string-match "/\\(.*\\):\\(.*\\)" emux-default-directory)
+        (let ((ssh-scheme (match-string 1 emux-default-directory))
+              (directory (match-string 2 emux-default-directory))
+              (terminal-name (ad-get-arg 0))
+              (original-command (ad-get-arg 1)))
+          (message (concat "name: " terminal-name))
+          (message (concat "command: " original-command))
+          (let ((command nil))
+            ad-do-it)
+          (emux-term-command (concat "ssh " ssh-scheme))
+          (emux-term-command (concat "cd " directory))
+          (emux-term-command (concat original-command)))
+      (let ((default-directory
+              (if emux-default-directory
+                  (concat emux-default-directory "/")
+                default-directory)))
+        ad-do-it))))
 
 (defadvice emux-term-create (after emux-store-session-buffer activate)
   (emux-session-set
