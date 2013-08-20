@@ -142,7 +142,7 @@ emux terminal buffer"
 
 (defadvice emux-term-create (around emux-session-default-directory activate)
   (let ((emux-default-directory (emux-session-get :default-directory)))
-    (if (string-match "/\\(.*\\):\\(.*\\)" emux-default-directory)
+    (if (and emux-default-directory (string-match "/\\(.*\\):\\(.*\\)" emux-default-directory))
         (let ((ssh-scheme (match-string 1 emux-default-directory))
               (directory (match-string 2 emux-default-directory))
               (terminal-name (ad-get-arg 0))
