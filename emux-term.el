@@ -220,14 +220,11 @@ to the current buffers terminal"
    (get-buffer-process (current-buffer))
    (current-kill 1)))
 
-(defun emux-term-clear-screen ()
-  "Remove all output from current buffer
-and enter term-char-mode"
+(defun emux-term-clear-previous-scrollback ()
+  "Remove srollback older than previous screen and refocus prompt"
   (interactive)
-  (mark-whole-buffer)
-  (delete-region (point-min) (point-max))
-  (if (equal major-mode 'term-mode)
-      (term-char-mode)))
+  (delete-region (point-min) (- (point-max) (* (window-width) (window-height))))
+  (emux-term-focus-prompt))
 
 (defun emux-term-focus-prompt ()
   "Enter term-char-mode and put the cursor at the prompt"
