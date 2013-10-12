@@ -35,6 +35,13 @@
 
 (require 'emux-base)
 
+
+(defcustom emux-term-program
+  "/bin/bash"
+  "The program to use for emux term"
+  :type  'string
+  :group 'emux)
+
 (defcustom emux-term-command-line-unbind-key-list
   '("C-x" "C-c" "C-h" "C-r" "C-s" "<ESC>")
   "Keys that should not fall through to term in term-char mode."
@@ -84,7 +91,7 @@ emux terminal buffer."
   "Create a new terminal with the buffer named NAME
 and execute terminal command command"
   (interactive)
-  (let* ((new-term (term "/bin/zsh"))
+  (let* ((new-term (term emux-term-program))
          (name (or name "terminal")))
     (emux-mode)
     (emux-term-setup-keys)
