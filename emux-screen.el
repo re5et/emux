@@ -54,29 +54,6 @@ emux terminal buffer."
   "Internal emux use, accessor that returns current screens"
   (emux-get 'screens))
 
-(defun emux-screen-create (&optional properties terminal-name terminal-command)
-  "Create new emux screen.  PROPERTIES is a property list that will be associated
-with the created screen. The optional TERMINAL-NAME will name the default
-screen terminal and TERMINAL-COMNMAND is the command to run in the newly
-created terminal"
-  (interactive)
-  (let ((screen-symbol (gensym "emux-screen-")))
-    (setplist screen-symbol properties)
-    (emux-screen-save-current)
-    (delete-other-windows)
-    (unless (emux-screen-get :no-terminal screen-symbol)
-      (emux-term-create
-       terminal-name
-       terminal-command))
-    (unless (emux-screen-get :name screen-symbol)
-      (emux-screen-set :name "1" screen-symbol))
-    (emux-set
-     'screens
-     (cons
-      screen-symbol
-      (emux-screens)))
-    (emux-screen-current screen-symbol)))
-
 (defun emux-screen-get (property &optional screen)
   "Internal emux use, screen property getter.  Gets the property
 PROPERTY from the screen SCREEN. If SCREEN is not passed in
@@ -90,6 +67,30 @@ PROPERTY to VALUE fom the screen SCREEN. If SCREEN is not
 passed in the current screen will be used."
   (let ((screen (or screen (emux-screen-current))))
     (put screen property value)))
+
+(defun emux-screen-create (&optional properties terminal-name terminal-command)
+  "Create new emux screen.  PROPERTIES is a property list that will be associated
+with the created screen. The optional TERMINAL-NAME will name the default
+screen terminal and TERMINAL-COMNMAND is the command to run in the newly
+created terminal"
+  (interactive)
+  (let ((screen-symbol (gensym "emux-screen-")))
+    (setplist screen-symbol properties)
+    (emux-screen-save-current)
+    (delete-other-windows)
+    (emux-screen-current screen-symbol)
+    (unless (emux-screen-get :no-terminal screen-symbol)
+      (emux-term-create
+       terminal-name
+       terminal-command))
+    (unless (emux-screen-get :name screen-symbol)
+      (emux-screen-set :name "1" screen-symbol))
+    (emux-set
+     'screens
+     (cons
+      screen-symbol
+      (emux-screens)))
+    (emux-screen-current screen-symbol)))
 
 (defun emux-screen-current (&optional screen)
   "Return current screen.  If optional SCREEN is passed in, it
@@ -147,17 +148,21 @@ If the optional SCREEN parameter is not passed, use current screen."
     (mapc 'emux-term-destroy (emux-screen-get :buffers screen))
     (emux-set 'screens (remove screen (emux-screens)))
     (if (eq screen (emux-screen-current))
-        (emux-screen-switch (car (emux-screens))))))
+        (when (emux-screens)
+          (emux-screen-switch (car (emux-screens)))))))
 
 (defun emux-screen-save-current ()
   "Internal emux use, Save the configuration and buffers of the current screen."
-  (if (emux-screen-current)
-      (progn
-        (emux-screen-set :config (current-window-configuration))
-        (emux-screen-set :buffers (mapcar 'window-buffer (window-list))))))
+  (when (emux-screen-current)
+    (emux-screen-set :config (current-window-configuration))
+    (emux-screen-set :buffers (mapcar 'window-buffer (window-list)))))
 
 (defadvice emux-session-switch (after emux-session-switch-to-current-screen activate)
   "Switch to a sessions current screen after switching sessions."
   (emux-screen-switch (emux-session-get :current-screen)))
+
+(defadvice emux-term-create (after emux-screen-save-current)
+  "Save state after a new terminal is created"
+  (emux-screen-save-current))
 
 (provide 'emux-screen)

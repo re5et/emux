@@ -250,8 +250,9 @@ to the current buffers terminal"
   (interactive)
   (let* ((buffer (or buffer (current-buffer)))
          (process (get-buffer-process buffer)))
-    (set-process-buffer process nil)
-    (kill-process process)
+    (when process
+      (set-process-buffer process nil)
+      (kill-process process))
     (kill-buffer buffer)))
 
 (defun emux-term-beginning-of-buffer ()
