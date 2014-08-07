@@ -242,13 +242,12 @@ emux terminal buffer"
           (mapcar
            (lambda (item) (symbol-name (car item)))
            (emux-get 'session-templates)))))
-    (if (cond
-         ((not (emux-session-from-name template)) t)
-         (t (yes-or-no-p (format "session %s already exists, really load?" template))))
-        (progn
-          (emux-session-create `(:name ,template))
-          (eval (cadr (assoc 'test (emux-get 'session-templates))))
-          (message "%s template loaded" template)))))
+    (when (cond
+           ((not (emux-session-from-name template)) t)
+           (t (yes-or-no-p (format "session %s already exists, reload?" template))))
+      (emux-session-create `(:name ,template))
+      (eval (cadr (assoc (intern template) (emux-get 'session-templates))))
+      (message "%s template loaded" template))))
 
 (if emux-default-session
     (and
