@@ -250,10 +250,14 @@ to the current buffers terminal"
   (interactive)
   (let* ((buffer (or buffer (current-buffer)))
          (process (get-buffer-process buffer)))
-    (when process
-      (set-process-buffer process nil)
-      (kill-process process))
-    (kill-buffer buffer)))
+    (if process
+      (and
+       (set-process-sentinel process 'emux-term-cleanup)
+       (kill-process process))
+      (kill-buffer buffer))))
+
+(defun emux-term-cleanup (process state)
+  (kill-buffer (process-buffer process)))
 
 (defun emux-term-beginning-of-buffer ()
   (interactive)
