@@ -227,24 +227,27 @@ emux terminal buffer"
                     (throw 'break nil))))
             (emux-session-get :screens)))))
 
+(defmacro emux-session-define-template (name &rest body)
+  `(let ((session-templates (emux-get 'session-templates)))
+     (emux-set
+      'session-templates
+      (push '(,name  (progn ,@body)) session-templates))
+     (print (emux-get 'session-templates))))
+
 (defun emux-session-load-template ()
   (interactive)
   (let ((template
          (emux-completing-read
           "load emux session template: "
-          (mapcar (lambda (filename)
-                    (substring filename 0 -3))
-                  (directory-files
-                   "~/.emacs.d/emux-templates" nil "^[^#].*\.el")))))
+          (mapcar
+           (lambda (item) (symbol-name (car item)))
+           (emux-get 'session-templates)))))
     (if (cond
          ((not (emux-session-from-name template)) t)
          (t (yes-or-no-p (format "session %s already exists, really load?" template))))
         (progn
           (emux-session-create `(:name ,template))
-          (load-file
-           (concat "~/.emacs.d/emux-templates/"
-                   template
-                   ".el"))
+          (eval (cadr (assoc 'test (emux-get 'session-templates))))
           (message "%s template loaded" template)))))
 
 (if emux-default-session
