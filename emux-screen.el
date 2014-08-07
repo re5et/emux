@@ -110,27 +110,29 @@ is not included, use current screen."
 in, switch to it, otherwise prompt for screen to switch to."
   (interactive)
   (emux-screen-save-current)
-  (let ((switch-to-screen
-         (or
-          screen
-          (emux-screen-from-name
-           (car
-            (split-string
-             (emux-completing-read
-              "screen: "
-              (mapcar
-               (lambda (screen)
-                 (format
-                  "%s[%s]"
-                  (or (emux-screen-get :name screen) "")
-                  (mapconcat
-                   (lambda (buffer)
-                     (cadr (split-string (buffer-name buffer) "/")))
-                   (emux-screen-get :buffers screen) ":")))
-               (emux-screens))) "\\["))))))
-    (set-window-configuration (emux-screen-get :config  switch-to-screen))
-    (emux-screen-current switch-to-screen)
-    (message (format "switched to screen '%s'" (emux-screen-get :name)))))
+  (if (emux-screens)
+      (let ((switch-to-screen
+             (or
+              screen
+              (emux-screen-from-name
+               (car
+                (split-string
+                 (emux-completing-read
+                  "screen: "
+                  (mapcar
+                   (lambda (screen)
+                     (format
+                      "%s[%s]"
+                      (or (emux-screen-get :name screen) "")
+                      (mapconcat
+                       (lambda (buffer)
+                         (cadr (split-string (buffer-name buffer) "/")))
+                       (emux-screen-get :buffers screen) ":")))
+                   (emux-screens))) "\\["))))))
+        (set-window-configuration (emux-screen-get :config  switch-to-screen))
+        (emux-screen-current switch-to-screen)
+        (message (format "switched to screen '%s'" (emux-screen-get :name))))
+    (message "there are no screens to switch to.")))
 
 (defun emux-screen-from-name (name)
   "Internal emux use, return screen with name NAME."
