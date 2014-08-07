@@ -244,7 +244,10 @@ emux terminal buffer"
            (emux-get 'session-templates)))))
     (when (cond
            ((not (emux-session-from-name template)) t)
-           (t (yes-or-no-p (format "session %s already exists, reload?" template))))
+           (t (and
+               (yes-or-no-p
+                (format "session %s already exists, reload?" template))
+               (emux-session-destroy))))
       (emux-session-create `(:name ,template))
       (eval (cadr (assoc (intern template) (emux-get 'session-templates))))
       (message "%s template loaded" template))))
