@@ -70,8 +70,14 @@ emux terminal buffer"
     (unless (emux-session-get :name)
       (emux-session-set :name (read-from-minibuffer "session name: ")))))
 
+(defun emux-filter (condp lst)
+  (delq nil
+        (mapcar (lambda (x) (and (funcall condp x) x)) lst)))
+
 (defun emux-session-get (property &optional session)
   (let ((session (or session (emux-session-current))))
+    (when (eq property :buffers) ; drop killed buffers
+      (emux-session-set :buffers (emux-filter 'buffer-live-p (get session property))))
     (get session property)))
 
 (defun emux-session-set (property value &optional session)
